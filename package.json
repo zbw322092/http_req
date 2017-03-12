@@ -1,0 +1,23 @@
+{
+  "name": "http_req",
+  "version": "1.0.0",
+  "description": "node.js http request package",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zbw322092/http_req.git"
+  },
+  "keywords": [
+    "nodejs",
+    "http"
+  ],
+  "author": "Bowen Zhong",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zbw322092/http_req/issues"
+  },
+  "homepage": "https://github.com/zbw322092/http_req#readme"
+}
