@@ -12,26 +12,46 @@ readableFile.setEncoding('utf8');
 // 	}
 // });
 
-var MyStream = function(options) {
+// var MyStream = function(options) {
+// 	Readable.call(this, options);
+// 	this.counter = 1000;
+// };
+
+// util.inherits(MyStream, Readable);
+
+// MyStream.prototype._read = function() {
+// 	this.push('foobar');
+// 	if (this.counter-- === 0) {
+// 		this.push(null);
+// 	}
+// };
+
+// var mystream = new MyStream();
+// mystream.pipe(process.stdout);
+
+
+
+function FileStream(source, options) {
 	Readable.call(this, options);
-	this.counter = 1000;
+	this._source = source;
 };
 
-util.inherits(MyStream, Readable);
+util.inherits(FileStream, Readable);
 
-MyStream.prototype._read = function() {
-	this.push('foobar');
-	if (this.counter-- === 0) {
-		this.push(null);
-	}
+FileStream.prototype._read = function() {
+	var chunk;
+	var self = this;
+
+	this._source.on('data', function(chunk) {
+		self.push(String(chunk + chalk.green('------------------------------------------')));
+	});
+	// this._source.on('end', function() {
+	// 	self.push(null);
+	// });
 };
 
-var mystream = new MyStream();
-mystream.pipe(process.stdout);
-
-
-
-
+var jsonfile = new FileStream(readableFile, {objectMode: true});
+jsonfile.pipe(process.stdout);
 
 
 
