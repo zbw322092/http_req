@@ -124,6 +124,48 @@ RedirectableRequest.prototype._processResponse = function(response) {
 	}
 };
 
+// Aborts the current native request
+RedirectableRequest.prototype.abort = function () {
+	this._currentRequest.abort();
+};
+
+// Flushes the headers of the current native request
+RedirectableRequest.prototype.flushHeaders = function () {
+	this._currentRequest.flushHeaders();
+};
+
+// Sets the noDelay option of the current native request
+RedirectableRequest.prototype.setNoDelay = function (noDelay) {
+	this._currentRequest.setNoDelay(noDelay);
+};
+
+// Sets the socketKeepAlive option of the current native request
+RedirectableRequest.prototype.setSocketKeepAlive = function (enable, initialDelay) {
+	this._currentRequest.setSocketKeepAlive(enable, initialDelay);
+};
+
+// Sets the timeout option of the current native request
+RedirectableRequest.prototype.setTimeout = function (timeout, callback) {
+	this._currentRequest.setTimeout(timeout, callback);
+};
+
+RedirectableRequest.prototype._write = function(data, encoding, callback) {
+	this._currentRequest.write(data, encoding, callback);
+	this._bufferedWrites.push({
+		data: data,
+		encoding: encoding
+	});
+};
+
+RedirectableRequest.prototype.end = function(data, encoding, callback) {
+	this._currentRequest.end(data, encoding, callback);
+	if (data) {
+		this._bufferedWrites.push({
+			data: data,
+			encoding: encoding
+		});
+	}
+};
 
 
 
