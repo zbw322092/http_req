@@ -15,6 +15,12 @@ var safeMethods = {
 	TRACE: true
 };
 
+var schemes = {};
+
+var exports = module.exports = {
+	maxRedirects: 21
+};
+
 var eventHandles = Object.create(null);
 ['abort', 'aborted', 'error', 'socket'].forEach(function (event) {
 	eventHandles[event] = function (arg) {
@@ -166,6 +172,34 @@ RedirectableRequest.prototype.end = function(data, encoding, callback) {
 		});
 	}
 };
+
+Object.keys(nativeProtocols).forEach(function(protocol) {
+	var scheme = scheme[protocol] = protocol.substr(0, protocol.length - 1);
+	var nativeProtocol = nativeProtocols[protocol];
+	var wrappedProtocol = exports[scheme] = Object.create(nativeProtocol);
+
+	wrappedProtocol.request = function(options, callback) {
+		if (typeof options === 'string') {
+			options = url.parse(options);
+			options.maxRedirects = exports.maxRedirects;
+		} else {
+			options = Object.assign({
+				maxRedirects: exports.maxRedirects,
+				protocol: protocol
+			}, options);
+		}
+
+		assert.equal(options.protocol, protocol, 'protocol mismatch');
+
+		return new RedirectableRequest(options, callback);
+	};
+
+	wrappedProtocol.get = function(options, callback) {
+		var request = wrappedProtocol.request(options, callback);
+		request.end();
+		return request;
+	};
+});
 
 
 
