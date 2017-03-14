@@ -17,5 +17,10 @@ var options = {
 };
 
 var formattedUrl = url.format(options);
-
 console.log(formattedUrl); // //www.google.com:80
+
+var resolvedUrl = url.resolve(formattedUrl, 'new');
+console.log(resolvedUrl);
+
+var parsedUrl = url.parse(resolvedUrl);
+console.log(parsedUrl);
