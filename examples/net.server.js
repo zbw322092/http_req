@@ -30,3 +30,8 @@ server.on('error', (e) => {
 		}, 1000);
 	}
 });
+
+setTimeout(() => {
+	console.log('connection is unreferred');
+	server.unref();
+}, 10000);
