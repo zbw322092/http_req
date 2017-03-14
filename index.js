@@ -51,9 +51,9 @@ RedirectableRequest.prototype = Object.create(Writable.prototype);
 
 RedirectableRequest.prototype._performRequest = function() {
 	var protocol = this._options.protocol;
-	// if (this._options.agents) {
-	// 	this._options.agent = this._options.agents[]
-	// }
+	if (this._options.agents) {
+		this._options.agent = this._options.agents[schemes[protocol]];
+	}
 
 	var nativeProtocol = nativeProtocols[this._options.protocol];
 	var request = this._currentRequest = 
