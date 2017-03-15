@@ -68,7 +68,7 @@ request.write(postData);
 request.end();
  */
 
-var g;
+
 
 
 
@@ -77,11 +77,15 @@ var protocols = {
 	'https:': https
 };
 
-function HttpRequest(options) {
+function HttpRequest(options, responseCallback) {
 	Writable.call(this);
 	this._options = options;
 	this.redirectTimes = 0;
 	this.defaultMaxRedirectTimes = 20;
+
+	if (responseCallback) {
+		this.on('response', responseCallback);
+	}
 
 	this._proformRequest();
 }
@@ -138,7 +142,9 @@ HttpRequest.prototype._processResponse = function(res) {
 		this._proformRequest();
 
 	} else {
-		console.log('Request Successful');
+		// otherwise, leave response alone, which means, we can pass the response to the request callback 
+		// defined by package users
+		this.emit('response', res);
 	}
 
 };
