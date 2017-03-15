@@ -19,7 +19,7 @@ var options = {
 	protocol: 'http:',
 	hostname: 'localhost',
 	port: 1334,
-	method: 'GET',
+	method: 'POST',
 	path: '/example',
 	headers: {
 		'Content-Type': 'text/plain'
@@ -31,6 +31,7 @@ var request = http.request(options, function(res) {
 
 	res.setEncoding('utf8');
 	res.on('data', (chunk) => {
+		console.log(`Server Response: ${chunk}`);
 		console.log(`Received ${chunk.length} bytes of data.`);
 	});
 	res.on('end', () => {
