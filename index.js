@@ -9,6 +9,7 @@
 // 			2.2 if no, return as normal
 var http = require('http');
 var https = require('https');
+var path = require('path');
 var querystring = require('querystring');
 
 var postData = querystring.stringify({
@@ -37,6 +38,14 @@ var request = http.request(options, function(res) {
 	res.on('end', () => {
 		console.log('There will be no more data.');
 	});
+
+	if (res.statusCode >= 300 && res.statusCode < 400 &&
+		res.headers.location) {
+		var originReqUrl = path.format(options);
+		var location = res.headers.location;
+		var redirectUrl = url.resolve(originReqUrl, location);
+		http.request(url.parse(redirectUrl));
+	}
 });
 
 request.on('error', (err) => {
