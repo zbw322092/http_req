@@ -10,6 +10,7 @@
 var http = require('http');
 var https = require('https');
 var path = require('path');
+var Writable = require('stream').Writable;
 var querystring = require('querystring');
 
 var postData = querystring.stringify({
@@ -26,6 +27,8 @@ var options = {
 		'Content-Type': 'text/plain'
 	}
 };
+// http.request usage:
+/*
 var request = http.request(options, function(res) {
 	console.log(`STATUS: ${res.statusCode}`);
 	console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
@@ -54,6 +57,47 @@ request.on('error', (err) => {
 
 request.write(postData);
 request.end();
+ */
+
+
+
+
+
+var protocols = {
+	'http:': http,
+	'https:': https
+};
+
+function HttpRequest(options) {
+	Writable.call(this);
+	this._options = options;
+	this._proformRequest();
+}
+
+HttpRequest.prototype._proformRequest = function() {
+	var nativeProtocol = protocols[this._options.protocol] || http;
+	// var originReqUrl = url.format(this._options);
+	var nativeRequest = http.request(this._options, this._processResponse);
+	nativeRequest.end();
+};
+
+HttpRequest.prototype._processResponse = function(res) {
+	console.log(`response statusCode is ${res.statusCode}`);
+};
+
+var r = new HttpRequest(options);
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
