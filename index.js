@@ -82,6 +82,7 @@ function HttpRequest(options, responseCallback) {
 	this._options = options;
 	this.redirectTimes = 0;
 	this.defaultMaxRedirectTimes = 20;
+	this._bufferedWrites = [];
 
 	if (responseCallback) {
 		this.on('response', responseCallback);
@@ -98,8 +99,22 @@ HttpRequest.prototype._proformRequest = function() {
 	var self = this;
 	// if do not use 'bind' method here, 'this' in _processResponse method will be bound to 
 	// the object http.request returned, which in this case is nativeRequest.
-	var nativeRequest = http.request(this._options, this._processResponse.bind(self));
-	nativeRequest.end();
+	var nativeRequest = this._currentRequest =
+		http.request(this._options, this._processResponse.bind(self));
+
+	var bufferedWrites = this._bufferedWrites;
+	if (bufferedWrites.length) {
+		nativeRequest.end();
+	} else {
+		var i = 0;
+		(function writeBuffer() {
+			if (i++ < bufferedWrites.length) {
+				nativeRequest.write(bufferedWrites[i].data, bufferedWrites[i].encoding, writeBuffer);
+			} else {
+				nativeRequest.end();
+			}
+		})();
+	}
 };
 
 HttpRequest.prototype._processResponse = function(res) {
@@ -147,6 +162,14 @@ HttpRequest.prototype._processResponse = function(res) {
 		this.emit('response', res);
 	}
 
+};
+
+HttpRequest.prototype._write = function(data, encoding, callback) {
+	this._currentRequest.write(data, encoding, callback);
+	this._bufferedWrites.push({
+		data: data,
+		encoding: encoding
+	});
 };
 
 var r = new HttpRequest(options);
