@@ -13,6 +13,7 @@ var path = require('path');
 var Writable = require('stream').Writable;
 var querystring = require('querystring');
 var url = require('url');
+var chalk = require('chalk');
 
 var postData = querystring.stringify({
 	'msg': 'Hello World'
@@ -27,6 +28,13 @@ var options = {
 	headers: {
 		'Content-Type': 'text/plain'
 	}
+};
+
+var safeMethods = {
+	GET: true, 
+	HEAD: true, 
+	OPTIONS: true, 
+	TRACE: true
 };
 // http.request usage:
 /*
@@ -78,6 +86,8 @@ function HttpRequest(options) {
 	this._proformRequest();
 }
 
+HttpRequest.prototype = Object.create(Writable.prototype);
+
 HttpRequest.prototype._proformRequest = function() {
 	var nativeProtocol = protocols[this._options.protocol] || http;
 	this.originReqUrl = url.format(this._options);
@@ -89,22 +99,43 @@ HttpRequest.prototype._proformRequest = function() {
 };
 
 HttpRequest.prototype._processResponse = function(res) {
-	console.log(`response statusCode is ${res.statusCode}`);
-	if (res.statusCode >= 300 && res.statusCode < 400 &&
-		res.headers.location) {
+	var location = res.headers.location;
+	console.log(res.statusCode);
+	if (res.statusCode >= 300 && res.statusCode < 400 && location) {
 		++this.redirectTimes;
-		if (this.redirectTimes < (this._options.maxRedirectTimes || 
+
+		// if redirect times exceed max redirect time, emit an error event
+		if (this.redirectTimes > (this._options.maxRedirectTimes || 
 			this.defaultMaxRedirectTimes)) {
-			// redirect
-			var redirectUrl = url.resolve(this.originReqUrl, res.headers.location);
-			// console.log(redirectUrl);
-			this._options = Object.assign(this._options, url.parse(redirectUrl));
-			console.log(this._options, 'aaaaaaaa');
-			this._proformRequest();
-		} else {
-			throw Error('Max redirects exceeded.');
+			return this.emit('error', new Error('Max redirects exceeded.'));			
 		}
 
+		var header;
+		var headers = this._options.headers;
+		if (res.statusCode !== 307 && !(this._options.method in safeMethods)) {
+			this._options.method = 'GET';
+			// delete entity related http headers
+			for (header in headers) {
+				if (/^content-/i.test(header)) {
+					delete headers[header];
+				}
+			}
+		}
+
+		// redirection may lead to different host
+		for (header in headers) {
+			if (/^host$/i.test(header)) {
+				delete headers[header];
+			}
+		}
+
+
+		// redirect
+		var redirectUrl = url.resolve(this.originReqUrl, location);
+		// console.log(redirectUrl);
+		Object.assign(this._options, url.parse(redirectUrl));
+		console.log(chalk.green(`It is the ${this.redirectTimes} times redirection\n`), this._options);
+		this._proformRequest();
 
 	} else {
 		console.log('Request Successful');

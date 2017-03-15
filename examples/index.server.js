@@ -32,7 +32,7 @@ var server = http.createServer(function(req, res) {
 	  });
 	  res.write(body, 'utf8');
 	  res.end();
-	} else if (req.method === 'POST' && reqUrl.path === '/new_path') {
+	} else if (req.method === 'GET' && reqUrl.path === '/new_path') {
 		console.log(reqUrl.path);
 		var body = 'see you again';
 	  res.writeHead(301, {
