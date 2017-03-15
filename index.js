@@ -92,16 +92,18 @@ HttpRequest.prototype._processResponse = function(res) {
 	console.log(`response statusCode is ${res.statusCode}`);
 	if (res.statusCode >= 300 && res.statusCode < 400 &&
 		res.headers.location) {
-		
-		// if (this.redirectTimes < (this._options.maxRedirectTimes || 
-		// 	this.defaultMaxRedirectTimes)) {
-		// 	// redirect
-		// 	var redirectUrl = url.resolve(this.originReqUrl, res.headers.location);
-		// 	this._options = url.parse(redirectUrl);
-		// 	this._proformRequest();
-		// } else {
-		// 	throw Error('Max redirects exceeded.');
-		// }
+		++this.redirectTimes;
+		if (this.redirectTimes < (this._options.maxRedirectTimes || 
+			this.defaultMaxRedirectTimes)) {
+			// redirect
+			var redirectUrl = url.resolve(this.originReqUrl, res.headers.location);
+			// console.log(redirectUrl);
+			this._options = Object.assign(this._options, url.parse(redirectUrl));
+			console.log(this._options, 'aaaaaaaa');
+			this._proformRequest();
+		} else {
+			throw Error('Max redirects exceeded.');
+		}
 
 
 	} else {

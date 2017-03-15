@@ -38,7 +38,7 @@ var server = http.createServer(function(req, res) {
 	  res.writeHead(301, {
 	  	'Content-Type': 'text/plain',
 	  	'Content-Length': Buffer.byteLength(body),
-	  	'Location': '/'
+	  	'Location': '/new_path'
 	  });
 	  res.write(body, 'utf8');
 	  res.end();
