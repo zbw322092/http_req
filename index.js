@@ -12,6 +12,7 @@ var https = require('https');
 var path = require('path');
 var Writable = require('stream').Writable;
 var querystring = require('querystring');
+var url = require('url');
 
 var postData = querystring.stringify({
 	'msg': 'Hello World'
@@ -22,7 +23,7 @@ var options = {
 	hostname: 'localhost',
 	port: 1334,
 	method: 'POST',
-	path: '/example',
+	path: '/redirect',
 	headers: {
 		'Content-Type': 'text/plain'
 	}
@@ -59,7 +60,7 @@ request.write(postData);
 request.end();
  */
 
-
+var g;
 
 
 
@@ -71,18 +72,42 @@ var protocols = {
 function HttpRequest(options) {
 	Writable.call(this);
 	this._options = options;
+	this.redirectTimes = 0;
+	this.defaultMaxRedirectTimes = 20;
+
 	this._proformRequest();
 }
 
 HttpRequest.prototype._proformRequest = function() {
 	var nativeProtocol = protocols[this._options.protocol] || http;
-	// var originReqUrl = url.format(this._options);
-	var nativeRequest = http.request(this._options, this._processResponse);
+	this.originReqUrl = url.format(this._options);
+	var self = this;
+	// if do not use 'bind' method here, 'this' in _processResponse method will be bound to 
+	// the object http.request returned, which in this case is nativeRequest.
+	var nativeRequest = http.request(this._options, this._processResponse.bind(self));
 	nativeRequest.end();
 };
 
 HttpRequest.prototype._processResponse = function(res) {
 	console.log(`response statusCode is ${res.statusCode}`);
+	if (res.statusCode >= 300 && res.statusCode < 400 &&
+		res.headers.location) {
+		
+		// if (this.redirectTimes < (this._options.maxRedirectTimes || 
+		// 	this.defaultMaxRedirectTimes)) {
+		// 	// redirect
+		// 	var redirectUrl = url.resolve(this.originReqUrl, res.headers.location);
+		// 	this._options = url.parse(redirectUrl);
+		// 	this._proformRequest();
+		// } else {
+		// 	throw Error('Max redirects exceeded.');
+		// }
+
+
+	} else {
+		console.log('Request Successful');
+	}
+
 };
 
 var r = new HttpRequest(options);
