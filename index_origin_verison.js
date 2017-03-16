@@ -174,7 +174,7 @@ RedirectableRequest.prototype.end = function(data, encoding, callback) {
 };
 
 Object.keys(nativeProtocols).forEach(function(protocol) {
-	var scheme = scheme[protocol] = protocol.substr(0, protocol.length - 1);
+	var scheme = schemes[protocol] = protocol.substr(0, protocol.length - 1);
 	var nativeProtocol = nativeProtocols[protocol];
 	var wrappedProtocol = exports[scheme] = Object.create(nativeProtocol);
 

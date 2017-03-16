@@ -79,6 +79,15 @@ var protocols = {
 
 var schemes = {};
 
+var eventHandles = Object.create(null);
+['abort', 'aborted', 'error', 'socket'].forEach(function(event) {
+	eventHandles[event] = function(arg) {
+		// 'this' here points to eventHandles object, we can sign value to
+		// this._redirectable to change the point.
+		this._redirectable.emit(event, arg);
+	};
+});
+
 function HttpRequest(options, responseCallback) {
 	Writable.call(this);
 	this._options = options;
@@ -98,6 +107,8 @@ HttpRequest.prototype = Object.create(Writable.prototype);
 HttpRequest.prototype._proformRequest = function() {
 	var nativeProtocol = protocols[this._options.protocol] || http;
 	this.originReqUrl = url.format(this._options);
+
+	this._redirectable = this;
 	var self = this;
 	// if do not use 'bind' method here, 'this' in _processResponse method will be bound to 
 	// the object http.request returned, which in this case is nativeRequest.
