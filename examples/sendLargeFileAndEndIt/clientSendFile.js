@@ -22,5 +22,10 @@ song.on('data', function(chunk) {
 	chunkData += chunk;
 	setTimeout(function() {
 		request.end(chunkData);
+		
+		if (chunk) {
+			console.log('still has data');
+		}
 	}, 500);
+
 });
