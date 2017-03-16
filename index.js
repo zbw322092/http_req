@@ -77,6 +77,8 @@ var protocols = {
 	'https:': https
 };
 
+var schemes = {};
+
 function HttpRequest(options, responseCallback) {
 	Writable.call(this);
 	this._options = options;
@@ -164,6 +166,31 @@ HttpRequest.prototype._processResponse = function(res) {
 
 };
 
+// Aborts the current native request
+HttpRequest.prototype.abort = function () {
+	this._currentRequest.abort();
+};
+
+// Flushes the headers of the current native request
+HttpRequest.prototype.flushHeaders = function () {
+	this._currentRequest.flushHeaders();
+};
+
+// Sets the noDelay option of the current native request
+HttpRequest.prototype.setNoDelay = function (noDelay) {
+	this._currentRequest.setNoDelay(noDelay);
+};
+
+// Sets the socketKeepAlive option of the current native request
+HttpRequest.prototype.setSocketKeepAlive = function (enable, initialDelay) {
+	this._currentRequest.setSocketKeepAlive(enable, initialDelay);
+};
+
+// Sets the timeout option of the current native request
+HttpRequest.prototype.setTimeout = function (timeout, callback) {
+	this._currentRequest.setTimeout(timeout, callback);
+};
+
 HttpRequest.prototype._write = function(data, encoding, callback) {
 	this._currentRequest.write(data, encoding, callback);
 	this._bufferedWrites.push({
@@ -172,7 +199,44 @@ HttpRequest.prototype._write = function(data, encoding, callback) {
 	});
 };
 
-var r = new HttpRequest(options);
+HttpRequest.prototype.end = function(data, encoding, callback) {
+	this._currentRequest.end(data, encoding, callback);
+	this._bufferedWrites.push({
+		data: data,
+		encoding: encoding
+	});
+};
+
+Object.keys(protocols).forEach(function(protocol) {
+	var scheme = schemes[protocol] = protocol.substr(0, protocol.length - 1);
+	var nativeProtocol = protocols[protocol];
+	// wrappedProtocol is an object whose __proto__ points to http/https
+	var wrappedProtocol = exports[scheme] = Object.create(nativeProtocol);
+	
+	wrappedProtocol.request = function(options, callback) {
+		if (typeof options === 'string') {
+			options = url.parse(options);
+
+		} else {
+			options = Object.assign({
+				protocol: protocol
+			}, options);
+		}
+
+		return new HttpRequest(options, callback);
+	};
+
+	wrappedProtocol.get = function(options, callback) {
+		var request = wrappedProtocol.request(options, callback);
+		request.end();
+		return request;
+	};
+
+});
+
+
+
+// var r = new HttpRequest(options);
 
 
 
