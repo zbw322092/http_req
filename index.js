@@ -132,7 +132,7 @@ HttpRequest.prototype._proformRequest = function() {
 
 HttpRequest.prototype._processResponse = function(res) {
 	var location = res.headers.location;
-	console.log(res.statusCode);
+	// console.log(res.statusCode);
 	if (res.statusCode >= 300 && res.statusCode < 400 && location) {
 		++this.redirectTimes;
 
@@ -166,7 +166,7 @@ HttpRequest.prototype._processResponse = function(res) {
 		var redirectUrl = url.resolve(this.originReqUrl, location);
 		// console.log(redirectUrl);
 		Object.assign(this._options, url.parse(redirectUrl));
-		console.log(chalk.green(`It is the ${this.redirectTimes} times redirection\n`), this._options);
+		console.log(chalk.green(`It is the ${this.redirectTimes} times redirection\n`));
 		this._proformRequest();
 
 	} else {
