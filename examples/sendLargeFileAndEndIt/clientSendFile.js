@@ -16,9 +16,11 @@ var request = http.request(options, function(res) {
 });
 
 var song = fs.createReadStream('./assets/Bob_Dylan-Tempest.mp3');
-setTimeout(function() {
-	request.end();
-}, 100);
+
+var chunkData;
 song.on('data', function(chunk) {
-	request.write(chunk);
+	chunkData += chunk;
+	setTimeout(function() {
+		request.end(chunkData);
+	}, 500);
 });

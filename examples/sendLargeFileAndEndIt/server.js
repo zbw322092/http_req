@@ -11,6 +11,8 @@ var server = http.createServer(function(req, res) {
 	});
 	req.on('end', function() {
 		console.log(`total data length is: ${totalData.length}`);
+		res.writeHead(200, 'Data Got');
+		res.end();
 		// console.log(chalk.red('no more data avaliable'));
 	});
 });
